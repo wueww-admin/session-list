@@ -58,7 +58,7 @@ class SessionListHandler implements InvocationRequestHandlerInterface
             return $response;
         }
 
-        $userId = JwtTokenHelper::fromHttpRequest($request)->getSub();
+        $userId = (int)JwtTokenHelper::fromHttpRequest($request)->getSub();
         $result = $this->sessionRepository->findByOwner($userId);
 
         $response = new HttpResponse($request->getInvocationId());

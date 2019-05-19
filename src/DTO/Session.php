@@ -9,13 +9,40 @@ class Session implements \JsonSerializable
     const JSON_DATETIME_FORMAT = 'Y-m-d\TH:i:sP';
 
     /**
-     * @var string[]
+     * @var mixed
      */
     private $record;
+
+    /**
+     * @var SessionDetails
+     */
+    private $proposedDetails;
+
+    /**
+     * @var SessionDetails|null
+     */
+    private $acceptedDetails;
 
     private function __construct(array $record)
     {
         $this->record = $record;
+        $this->proposedDetails = SessionDetails::fromRecord($this->joinData('sdp_', $record));
+
+        $sda = $this->joinData('sda_', $record);
+        $this->acceptedDetails = ($sda['title'] === null) ? null : SessionDetails::fromRecord($sda);
+    }
+
+    private function joinData(string $prefix, array $record): array
+    {
+        $result = [];
+
+        foreach ($record as $key => $value) {
+            if (strpos($key, $prefix) === 0) {
+                $result[substr($key, strlen($prefix))] = $value;
+            }
+        }
+
+        return $result;
     }
 
     public static function fromRecord(array $data): self
@@ -28,7 +55,7 @@ class Session implements \JsonSerializable
      */
     public function getId(): int
     {
-        return (int) $this->record['id'];
+        return (int)$this->record['id'];
     }
 
     /**
@@ -70,6 +97,8 @@ class Session implements \JsonSerializable
             'start' => $this->getStart()->format(self::JSON_DATETIME_FORMAT),
             'end' => $end === null ? null : $end->format(self::JSON_DATETIME_FORMAT),
             'cancelled' => $this->isCancelled(),
+            'proposedDetails' => $this->proposedDetails,
+            'acceptedDetails' => $this->acceptedDetails,
         ];
     }
 }

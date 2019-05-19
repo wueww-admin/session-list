@@ -11,4 +11,8 @@ upload:
 		tm deploy service $(SERVICE_NAME) -n $(NAMESPACE) -f upload.tmp --build-template $(BUILD_TEMPLATE) --env EVENT=API_GATEWAY $(EXTRA_ENV) --wait && \
 		rm -rf upload.tmp
 
-.PHONY: upload
+phpstan:
+	./vendor/phpstan/phpstan/bin/phpstan analyse --level=7 src/
+
+
+.PHONY: upload phpstan

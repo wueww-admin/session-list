@@ -4,6 +4,7 @@
 namespace App;
 
 
+use App\DTO\Session;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 
@@ -34,7 +35,7 @@ class SessionRepository
         $stmt->bindValue('ownerid', $ownerId);
         $stmt->execute();
 
-        $result = $stmt->fetchAll();
+        $result = array_map([Session::class, 'fromRecord'], $stmt->fetchAll());
 
         return $result;
     }

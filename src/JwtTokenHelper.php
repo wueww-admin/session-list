@@ -51,7 +51,7 @@ class JwtTokenHelper
 
     public function getSub(): string
     {
-        if (isset($this->payload['sub']) || !is_string($this->payload['sub'])) {
+        if (!isset($this->payload['sub']) || !is_string($this->payload['sub'])) {
             throw new \RuntimeException('Malformed JWT Subject Record');
         }
 

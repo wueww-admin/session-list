@@ -4,7 +4,7 @@
 namespace App;
 
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use TopicAdvisor\Lambda\RuntimeApi\Http\HttpRequestInterface;
 use TopicAdvisor\Lambda\RuntimeApi\Http\HttpResponse;
 use TopicAdvisor\Lambda\RuntimeApi\InvocationRequestHandlerInterface;
@@ -14,16 +14,13 @@ use TopicAdvisor\Lambda\RuntimeApi\InvocationResponseInterface;
 class SessionListHandler implements InvocationRequestHandlerInterface
 {
     /**
-     * @var Connection
+     * @var SessionRepository
      */
-    private $connection;
+    private $sessionRepository;
 
-    /**
-     * @param Connection $connection
-     */
-    public function __construct(Connection $connection)
+    public function __construct(SessionRepository $sessionRepository)
     {
-        $this->connection = $connection;
+        $this->sessionRepository = $sessionRepository;
     }
 
     /**
@@ -46,7 +43,7 @@ class SessionListHandler implements InvocationRequestHandlerInterface
     /**
      * @param InvocationRequestInterface $request
      * @return InvocationResponseInterface
-     * @throws \Exception
+     * @throws DBALException
      */
     public function handle(InvocationRequestInterface $request): InvocationResponseInterface
     {
@@ -62,13 +59,7 @@ class SessionListHandler implements InvocationRequestHandlerInterface
         }
 
         $userId = JwtTokenHelper::fromHttpRequest($request)->getSub();
-
-        $sql = "SELECT * FROM sessions WHERE owner = :userid";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue('userid', $userId);
-        $stmt->execute();
-
-        $result = $stmt->fetchAll();
+        $result = $this->sessionRepository->findByOwner($userId);
 
         $response = new HttpResponse($request->getInvocationId());
         $response->setStatusCode(200);

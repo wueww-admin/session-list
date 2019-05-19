@@ -25,6 +25,6 @@ $conn = DriverManager::getConnection($connectionParams, $config);
 $loop = new TopicAdvisor\Lambda\RuntimeApi\RuntimeApiLoop();
 $loop
     ->setHandlers([
-        new App\SessionListHandler($conn),
+        new App\SessionListHandler(new App\SessionRepository($conn)),
     ])
     ->run();

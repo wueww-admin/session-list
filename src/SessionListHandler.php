@@ -61,8 +61,7 @@ class SessionListHandler implements InvocationRequestHandlerInterface
             return $response;
         }
 
-        $userId = $this->extractUserId($request);
-
+        $userId = JwtTokenHelper::fromHttpRequest($request)->getSub();
 
         $sql = "SELECT * FROM sessions WHERE owner = :userid";
         $stmt = $this->connection->prepare($sql);
@@ -86,34 +85,5 @@ class SessionListHandler implements InvocationRequestHandlerInterface
      */
     public function postHandle(InvocationRequestInterface $request, InvocationResponseInterface $response)
     {
-    }
-
-    private function extractUserId(HttpRequestInterface $request): int
-    {
-        $authHeaderParts = \explode(' ', $request->getHeaderLine('Authorization'), 2);
-
-        if (\count($authHeaderParts) !== 2 || $authHeaderParts[0] !== 'Bearer') {
-            throw new \RuntimeException('Invalid Authorization');
-        }
-
-        $jwtParts = \explode('.', $authHeaderParts[1]);
-
-        if (\count($jwtParts) !== 3) {
-            throw new \RuntimeException('Malformed JWT Token');
-        }
-
-        $decodedPayload = \base64_decode($jwtParts[1]);
-
-        if ($decodedPayload === false) {
-            throw new \RuntimeException('Failed to base64-decode payload data. Invalid JWT token.');
-        }
-
-        $jwtPayload = \json_decode($decodedPayload, true);
-
-        if (!is_array($jwtPayload) || !isset($jwtPayload['sub']) || !is_string($jwtPayload['sub'])) {
-            throw new \RuntimeException('Malformed JWT Subject Record');
-        }
-
-        return (int)$jwtPayload['sub'];
     }
 }
